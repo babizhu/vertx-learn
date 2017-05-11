@@ -27,10 +27,9 @@ public class FutureDemo {
      */
     private static void demo1() {
 
-//        eventBus.send("address1", "value1", asyncResult -> System.out.println(asyncResult.result().body()));
         //一个复杂一点的例子，产生了回调地狱
         //以下程序先向address1发送一个message，然后等address1回复之后，将address1的回复消息发送给address2......
-        eventBus.send("address1", "value1", (AsyncResult<Message<Object>> asyncResult) -> {
+        eventBus.send("address1", "value1", asyncResult -> {
             if (asyncResult.succeeded()) {
                 eventBus.send("address2", asyncResult.result().body(), asyncResult2 -> {
                     if (asyncResult2.succeeded()) {
