@@ -15,12 +15,20 @@ public class Demo1 extends AbstractVerticle{
     private JDBCClient client;
 
     public void start(){
+//        JsonObject config = new JsonObject()
+//                .put( "url", "jdbc:mysql://localhost:3306/dlb?useSSL=true" )
+//                .put( "user", "root" )
+//                .put( "password", "root" )
+////                .put( "driverClassName", "com.zaxxer.hikari" )
+//                .put( "maximumPoolSize", 30 );
+
         JsonObject config = new JsonObject()
-                .put( "url", "jdbc:mysql://localhost:3306/dlb?useSSL=true" )
-                .put( "user", "root" )
-                .put( "password", "root" )
-//                .put( "driverClassName", "com.zaxxer.hikari" )
-                .put( "maximumPoolSize", 30 );
+                .put("provider_class", "io.vertx.ext.jdbc.spi.impl.HikariCPDataSourceProvider")
+                .put("jdbcUrl", "jdbc:mysql://localhost:3306/dlb?useSSL=true")
+                .put("username", "root")
+                .put("password","root")
+//                .put("driverClassName", "org.postgresql.Driver")
+                .put("maximumPoolSize", 30);
 
         client = JDBCClient.createShared( vertx, config );
         client.getConnection( res -> {
@@ -41,6 +49,7 @@ public class Demo1 extends AbstractVerticle{
                 } );
             } else {
                 // 获取连接失败 - 处理失败的情况
+//                res.cause().printStackTrace();
             }
         } );
     }
