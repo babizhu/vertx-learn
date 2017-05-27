@@ -4,6 +4,8 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,10 +123,29 @@ public class FutureDemo{
 
     }
 
+    private static void httpClientDemo(){
+        HttpClient httpClient = vertx.createHttpClient();
+////        Future.<HttpClientResponse>future(f -> httpClient.get("www.sina.com.cn","/",Future::succeededFuture).end())
+//        Future<HttpClientResponse> future = Future.<HttpClientResponse>future( f -> httpClient.get( "www.sina.com.cn", "/", Future::succeededFuture ).end() );
+////        future.setHandler(bodyHandler( body -> System.out.println( body.toString() ) );
+////        .compose(
+////                resp->{
+////                    resp.bodyHandler( body-> System.out.println(body.toString()) );
+////                    return Future.future();
+////                }
+////        );
+        Future.<HttpClientResponse>future(f->
+                httpClient.get( "www.sina.com.cn","/",Future::succeededFuture )
+        );
+
+
+    }
+
     public static void main( String[] args ){
         init();
 //        demo1();
 //        demo2();
-        composeDemo();
+//        composeDemo();
+        httpClientDemo();
     }
 }
