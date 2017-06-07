@@ -4,6 +4,8 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,12 +121,43 @@ public class FutureDemo{
 
         future2.setHandler( future1 );
 
+
+    }
+
+    private static void httpClientDemo(){
+        final HttpClient httpClient = vertx.createHttpClient();
+//        httpClient.get( "z.cn", "/", resp -> resp.bodyHandler( body -> System.out.println( body ) ) ).end();
+        Future.<HttpClientResponse>future( f ->
+                httpClient.get( "z.cn", "/", resp -> f.complete( resp ) ).end()
+
+        ).compose( resp ->
+                    Future.<HttpClientResponse>future( f -> {
+                            if( resp.statusCode() == 200 ) {
+                                System.out.println( "resp.statusCode() == 200" );
+                                httpClient.get( "z.cn", "/", Future::succeededFuture ).end();
+                            } else {
+                                System.out.println( "resp.statusCode() !!!!= 200" );
+
+                                f.fail( "status code is not 200" );
+                            }
+                        }
+
+                    )).setHandler( resp -> {
+                    if( resp.failed() ) {
+                        resp.cause().printStackTrace();
+                    } else {
+                        System.out.println( "success" );
+                    }
+                } );
+
     }
 
     public static void main( String[] args ){
         init();
 //        demo1();
 //        demo2();
-        composeDemo();
+//        composeDemo();
+        httpClientDemo();
     }
+
 }

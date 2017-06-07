@@ -22,6 +22,8 @@ public class Demo1 extends AbstractVerticle{
 ////                .put( "driverClassName", "com.zaxxer.hikari" )
 //                .put( "maximumPoolSize", 30 );
 
+
+
         JsonObject config = new JsonObject()
                 .put("provider_class", "io.vertx.ext.jdbc.spi.impl.HikariCPDataSourceProvider")
                 .put("jdbcUrl", "jdbc:mysql://localhost:3306/dlb?useSSL=true")
@@ -56,6 +58,7 @@ public class Demo1 extends AbstractVerticle{
 
     public static void main( String[] args ){
         Vertx vertx = Vertx.vertx();
+
 
         vertx.deployVerticle( Demo1.class.getName() );
     }

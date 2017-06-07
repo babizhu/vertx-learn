@@ -11,11 +11,14 @@
     <modules>
         <module>base</module>
         <module>db</module>
+        <module>web</module>
+        <module>ignite</module>
     </modules>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <ignite.version>2.0.0</ignite.version>
     </properties>
     <dependencies>
         <!-- https://mvnrepository.com/artifact/io.vertx/vertx-core -->
@@ -41,10 +44,30 @@
             <version>3.4.1</version>
         </dependency>
         <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-web</artifactId>
+            <version>3.4.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-auth-jdbc</artifactId>
+            <version>3.4.1</version>
+        </dependency>
+        <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>6.0.5</version>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.ignite</groupId>
+            <artifactId>ignite-core</artifactId>
+            <version>${ignite.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.ignite</groupId>
+            <artifactId>ignite-indexing</artifactId>
+            <version>${ignite.version}</version>
         </dependency>
     </dependencies>
 
