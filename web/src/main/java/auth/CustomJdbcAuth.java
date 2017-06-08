@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
  * 自定义的web Auth 类
  */
 public class CustomJdbcAuth implements AuthProvider{
+
     private static final String DEFAULT_AUTHENTICATE_QUERY = "SELECT PASSWORD, PASSWORD_SALT FROM USER WHERE USERNAME = ?";
 
     /**
@@ -79,8 +80,8 @@ public class CustomJdbcAuth implements AuthProvider{
                             final Set<String> roles = rs1.getRows().stream().map( entries -> entries.getString( "ROLE" ) ).collect( Collectors.toSet() );
                             final String  permissionCondition = roles.stream().map(item->"'"+item+"'").collect( Collectors.joining(",") );
                             final String permissionSql = DEFAULT_PERMISSIONS_QUERY.replace( "?", permissionCondition );
-                            executeQuery( permissionSql, null, resultHandler, rs2 -> {
-//
+
+                            executeQuery( permissionSql, null, resultHandler, rs2 -> {//
                                 final Set<String> permissions = rs2.getRows().stream().map( entries -> entries.getString( "PERM" ) ).collect( Collectors.toSet() );
                                 resultHandler.handle( Future.succeededFuture( new CustomWebUser( userName,roles,permissions,this ) ) );
                             } );

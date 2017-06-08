@@ -17,6 +17,7 @@ import java.util.Set;
  * 自定义User
  */
 public class CustomWebUser implements User, ClusterSerializable{
+
     private final Set<String> roles;
     private final Set<String> permissions;
     private final JsonObject principal;
@@ -29,7 +30,6 @@ public class CustomWebUser implements User, ClusterSerializable{
         this.roles = roles;
         this.permissions = permissions;
         principal = new JsonObject().put( "username", userName );
-//        this.authProvider = customJdbcAuth;
         this.userName = userName;
         rolePrefix = CustomJdbcAuth.DEFAULT_ROLE_PREFIX;
     }
@@ -60,68 +60,72 @@ public class CustomWebUser implements User, ClusterSerializable{
 
     @Override
     public void setAuthProvider( AuthProvider authProvider ){
-        if (authProvider instanceof CustomJdbcAuth ) {
+        if( authProvider instanceof CustomJdbcAuth ) {
             this.authProvider = (CustomJdbcAuth) authProvider;
         } else {
-            throw new IllegalArgumentException("Not a CustomJdbcAuth");
+            throw new IllegalArgumentException( "Not a CustomJdbcAuth" );
         }
-//        this.authProvider
     }
 
     @Override
-    public void writeToBuffer(Buffer buff) {
-        writeStringSet(buff, roles);
-        writeStringSet(buff, permissions);
-        byte[] bytes = userName.getBytes( StandardCharsets.UTF_8);
-        buff.appendInt(bytes.length);
-        buff.appendBytes(bytes);
+    public void writeToBuffer( Buffer buff ){
 
-        bytes = rolePrefix.getBytes(StandardCharsets.UTF_8);
-        buff.appendInt(bytes.length);
-        buff.appendBytes(bytes);
+        writeStringSet( buff, roles );
+        writeStringSet( buff, permissions );
+        byte[] bytes = userName.getBytes( StandardCharsets.UTF_8 );
+        buff.appendInt( bytes.length );
+        buff.appendBytes( bytes );
+
+        bytes = rolePrefix.getBytes( StandardCharsets.UTF_8 );
+        buff.appendInt( bytes.length ).appendBytes( bytes );
     }
 
     @Override
-    public int readFromBuffer(int pos, Buffer buffer) {
-        pos = readStringSet(buffer, roles, pos);
-        pos = readStringSet(buffer, permissions, pos);
+    public int readFromBuffer( int pos, Buffer buffer ){
+        pos = readStringSet( buffer, roles, pos );
+        pos = readStringSet( buffer, permissions, pos );
 //        pos = super.readFromBuffer(pos, buffer);
-        int len = buffer.getInt(pos);
+
+        int len = buffer.getInt( pos );
         pos += 4;
-        byte[] bytes = buffer.getBytes(pos, pos + len);
-        userName = new String(bytes, StandardCharsets.UTF_8);
+        byte[] bytes = buffer.getBytes( pos, pos + len );
+        userName = new String( bytes, StandardCharsets.UTF_8 );
         pos += len;
 
-        len = buffer.getInt(pos);
+        len = buffer.getInt( pos );
         pos += 4;
-        bytes = buffer.getBytes(pos, pos + len);
-        rolePrefix = new String(bytes, StandardCharsets.UTF_8);
+        bytes = buffer.getBytes( pos, pos + len );
+        rolePrefix = new String( bytes, StandardCharsets.UTF_8 );
         pos += len;
 
         return pos;
     }
 
 
-    private void writeStringSet(Buffer buff, Set<String> set) {
-        buff.appendInt(set == null ? 0 : set.size());
-        if (set != null) {
-            for (String entry : set) {
-                byte[] bytes = entry.getBytes(StandardCharsets.UTF_8);
-                buff.appendInt(bytes.length).appendBytes(bytes);
+    private void writeStringSet( Buffer buff, Set<String> set ){
+        buff.appendInt( set == null ? 0 : set.size() );
+        if( set != null ) {
+            for( String entry : set ) {
+                byte[] bytes = entry.getBytes( StandardCharsets.UTF_8 );
+                buff.appendInt( bytes.length ).appendBytes( bytes );
             }
         }
     }
 
-    private int readStringSet(Buffer buffer, Set<String> set, int pos) {
-        int num = buffer.getInt(pos);
+    private int readStringSet( Buffer buffer, Set<String> set, int pos ){
+        int num = buffer.getInt( pos );
         pos += 4;
-        for (int i = 0; i < num; i++) {
-            int len = buffer.getInt(pos);
+        for( int i = 0; i < num; i++ ) {
+            int len = buffer.getInt( pos );
             pos += 4;
-            byte[] bytes = buffer.getBytes(pos, pos + len);
+            byte[] bytes = buffer.getBytes( pos, pos + len );
             pos += len;
-            set.add(new String(bytes, StandardCharsets.UTF_8));
+            set.add( new String( bytes, StandardCharsets.UTF_8 ) );
         }
         return pos;
+    }
+
+    public Set<String> getRoles(){
+        return roles;
     }
 }

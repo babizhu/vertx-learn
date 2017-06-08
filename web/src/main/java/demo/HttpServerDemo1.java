@@ -10,8 +10,7 @@ import io.vertx.ext.web.RoutingContext;
  * Created by liulaoye on 17-5-15.
  * web服务器
  */
-public class HttpServerDemo1
-        extends AbstractVerticle{
+public class HttpServerDemo1 extends AbstractVerticle{
 
     @Override
     public void start() throws Exception{
