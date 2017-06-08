@@ -50,6 +50,7 @@ public class AuthWebVerticle extends AbstractVerticle{
      * 初始化jdbcClient以及authProvider
      */
     private void init(){
+        System.out.println(config().getString("/private/product/add"));
         JsonObject jdbcClientConfig = new JsonObject()
                 .put( "provider_class", "io.vertx.ext.jdbc.spi.impl.HikariCPDataSourceProvider" )
                 .put( "jdbcUrl", "jdbc:mysql://localhost:3306/dlb?useSSL=true" )
@@ -59,6 +60,8 @@ public class AuthWebVerticle extends AbstractVerticle{
                 .put( "maximumPoolSize", 30 );
         JDBCClient jdbcClient = JDBCClient.createShared( vertx, jdbcClientConfig );
         authProvider = new CustomJdbcAuth( vertx, jdbcClient );
+        System.out.println("AuthWebVerticle.init");
+//        this.config()
     }
 
 
@@ -69,6 +72,8 @@ public class AuthWebVerticle extends AbstractVerticle{
 
         DeploymentOptions options = new DeploymentOptions();
         options.setInstances( 2 );
+
+        options.setConfig(new JsonObject().put("/private/product/add","admin"));
         vertx.deployVerticle( AuthWebVerticle.class.getName(), options, res -> {
             if( res.succeeded() ) {
                 System.out.println( "web server started at port " + PORT + ", please click http://localhost:" + PORT + " to visit!" );
