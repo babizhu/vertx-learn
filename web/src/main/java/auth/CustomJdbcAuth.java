@@ -71,17 +71,23 @@ public class CustomJdbcAuth implements AuthProvider{
                     break;
                 }
                 case 1: {
+                    System.out.println(Thread.currentThread().getName());
                     JsonArray row = rs.getResults().get( 0 );
                     String hashedStoredPwd = hashStrategy.getHashedStoredPwd( row );
                     String salt = hashStrategy.getSalt( row );
                     String hashedPassword = hashStrategy.computeHash( password, salt );
                     if( hashedStoredPwd.equals( hashedPassword ) ) {
+
                         executeQuery( DEFAULT_ROLES_QUERY, new JsonArray().add( userName ), resultHandler, rs1 -> {
+                            System.out.println(Thread.currentThread().getName());
+
                             final Set<String> roles = rs1.getRows().stream().map( entries -> entries.getString( "ROLE" ) ).collect( Collectors.toSet() );
                             final String  permissionCondition = roles.stream().map(item->"'"+item+"'").collect( Collectors.joining(",") );
                             final String permissionSql = DEFAULT_PERMISSIONS_QUERY.replace( "?", permissionCondition );
 
                             executeQuery( permissionSql, null, resultHandler, rs2 -> {//
+                                System.out.println(Thread.currentThread().getName());
+
                                 final Set<String> permissions = rs2.getRows().stream().map( entries -> entries.getString( "PERM" ) ).collect( Collectors.toSet() );
                                 resultHandler.handle( Future.succeededFuture( new CustomWebUser( userName,roles,permissions,this ) ) );
                             } );
