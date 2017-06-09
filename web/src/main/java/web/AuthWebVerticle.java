@@ -1,5 +1,6 @@
 package web;
 
+import anno.RequirePermission;
 import auth.CustomJdbcAuth;
 import auth.CustomWebUser;
 import io.vertx.core.*;
@@ -50,20 +51,11 @@ public class AuthWebVerticle extends AbstractVerticle{
         } );
         final Handler<RoutingContext> product = this::product;
         final Handler<RoutingContext> test = this::test;
-        final ContextTask contextTask = this::init;
 
         router.route( "/public" ).handler( product );
         System.out.println( test );
         System.out.println( "test instanceof Handler is " + (test instanceof Handler) );
-        final Method[] methods = this.getClass().getDeclaredMethods();
-        for( Method method : methods ) {
-            System.out.println(method.getName() + (method.getDeclaredAnnotations()));
-            if( method.getName().equals( "product" )){
-                for( Parameter parameter : method.getParameters() ) {
-                    System.out.println(parameter.getType());
-                }
-            }
-        }
+
         server.requestHandler( router::accept ).listen( PORT );
 
     }
@@ -72,6 +64,7 @@ public class AuthWebVerticle extends AbstractVerticle{
 
     }
 
+    @RequirePermission( "/product/list" )
     private void product( RoutingContext ctx ){
         ctx.response().end( "product111" );
     }
@@ -80,6 +73,15 @@ public class AuthWebVerticle extends AbstractVerticle{
      * 初始化jdbcClient以及authProvider
      */
     private void init(){
+
+        final Method[] methods = this.getClass().getDeclaredMethods();
+        for( Method method : methods ) {
+            System.out.println( method.getName() + (method.getDeclaredAnnotations()) );
+            if( method.isAnnotationPresent( RequirePermission.class ) ) {
+                System.out.println(method.getDeclaredAnnotation(RequirePermission.class  ).value());
+            }
+        }
+
 //        System.out.println(config().getString("/private/product/add"));
         JsonObject jdbcClientConfig = new JsonObject()
                 .put( "provider_class", "io.vertx.ext.jdbc.spi.impl.HikariCPDataSourceProvider" )
