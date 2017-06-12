@@ -3,6 +3,7 @@ package web.handler.impl;
 import anno.RequirePermissions;
 import anno.RequireRoles;
 import io.vertx.ext.auth.AuthProvider;
+import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,12 +21,14 @@ import java.util.stream.Collectors;
 public class WebAuthHandlerImpl implements WebAuthHandler{
     private static final Logger logger = LoggerFactory.getLogger( WebAuthHandlerImpl.class.getName() );
     private static final String PACKAGE_BASE = "web.handler.impl";
+    private final AuthProvider authProvider;
     //    new HashMap<String,Set<String>>()
-    Map<String, Set<String>> authMap = new HashMap<>();
+    private Map<String, Set<String>> authMap = new HashMap<>();
 
     public WebAuthHandlerImpl( AuthProvider authProvider ){
         super();
         this.init();
+        this.authProvider = authProvider;
     }
 
     private void init(){
@@ -47,10 +50,10 @@ public class WebAuthHandlerImpl implements WebAuthHandler{
 //            System.out.println( method.getName() + (method.getDeclaredAnnotations()) );
             if( method.isAnnotationPresent( RequirePermissions.class ) || method.isAnnotationPresent( RequireRoles.class ) ) {
                 if( method.isAnnotationPresent( RequirePermissions.class ) ) {
-                    roleAndPermisstionSet.addAll(transSetFromStr( method.getDeclaredAnnotation( RequirePermissions.class ).value() ));
+                    roleAndPermisstionSet.addAll( transSetFromStr( method.getDeclaredAnnotation( RequirePermissions.class ).value() ) );
                 }
                 if( method.isAnnotationPresent( RequireRoles.class ) ) {
-                    roleAndPermisstionSet.addAll(transSetFromStr( method.getDeclaredAnnotation( RequireRoles.class ).value() ));
+                    roleAndPermisstionSet.addAll( transSetFromStr( method.getDeclaredAnnotation( RequireRoles.class ).value() ) );
 
                 }
                 String key = clazzName + "/" + method.getName();
@@ -92,7 +95,11 @@ public class WebAuthHandlerImpl implements WebAuthHandler{
 
     @Override
     public void handle( RoutingContext ctx ){
-
+        final User user = ctx.user();
+        if( user == null ) {
+           ctx.fail( 503 );
+//           ctx.response().end("Not loggin");
+        }
         ctx.next();
     }
 }
