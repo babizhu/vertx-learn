@@ -11,6 +11,7 @@ import web.util.PackageUtil;
 
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by liulaoye on 17-6-12.
@@ -66,11 +67,12 @@ public class WebAuthHandlerImpl implements WebAuthHandler{
      * @return set
      */
     private Set<String> transSetFromStr( String str ){
-        final HashSet<String> set = new HashSet<>();
-        for( String s : str.split( "," ) ) {
-            set.add( s );
-        }
-        return set;
+        return Arrays.stream( str.split( "," ) ).collect( Collectors.toSet() );
+//        final HashSet<String> set = new HashSet<>();
+//        for( String s : str.split( "," ) ) {
+//            set.add( s );
+//        }
+//        return set;
     }
 
     /**
