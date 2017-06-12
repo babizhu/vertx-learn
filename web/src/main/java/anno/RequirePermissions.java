@@ -7,10 +7,10 @@ import java.lang.annotation.Target;
 
 /**
  * Created by liu_k on 2017/6/9.
- *
+ * permissions
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RequirePermission{
+public @interface RequirePermissions{
     String value();
 }
