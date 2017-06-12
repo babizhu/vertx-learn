@@ -170,6 +170,7 @@ public class WebDemoVerticle extends AbstractVerticle {
             }
         });
         router.route().handler(ctx -> ctx.fail( 404) );
+
     }
 
 

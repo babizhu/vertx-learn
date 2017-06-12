@@ -128,4 +128,7 @@ public class CustomWebUser implements User, ClusterSerializable{
     public Set<String> getRoles(){
         return roles;
     }
+    public Set<String> getPermissions(){
+        return permissions;
+    }
 }

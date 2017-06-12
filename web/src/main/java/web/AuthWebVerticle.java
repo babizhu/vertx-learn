@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import web.handler.WebAuthHandler;
 import web.handler.impl.ProductHandler;
 
-import java.lang.reflect.Method;
 
 /**
  * Created by liulaoye on 17-6-8.
@@ -67,6 +66,7 @@ public class AuthWebVerticle extends AbstractVerticle{
 //        System.out.println( "test instanceof Handler is " + (test instanceof Handler) );
 
         server.requestHandler( router::accept ).listen( PORT );
+        logger.info("init end");
 
     }
 
@@ -88,19 +88,6 @@ public class AuthWebVerticle extends AbstractVerticle{
 
     private void init(){
 
-        AuthWebVerticle.class.getDeclaredMethods();
-        final Method[] methods = this.getClass().getDeclaredMethods();
-//        for( Method method : methods ) {
-////            System.out.println( method.getName() + (method.getDeclaredAnnotations()) );
-//            if( method.isAnnotationPresent( RequirePermissions.class ) ) {
-//                logger.info( method.getName() + " | " + method.getDeclaredAnnotation( RequirePermissions.class ).value() );
-//            }
-//            if( method.isAnnotationPresent( RequireRoles.class ) ) {
-//                logger.info( method.getDeclaredAnnotation( RequireRoles.class ).value() );
-//            }
-//        }
-
-//        System.out.println(config().getString("/private/product/add"));
         JsonObject jdbcClientConfig = new JsonObject()
                 .put( "provider_class", "io.vertx.ext.jdbc.spi.impl.HikariCPDataSourceProvider" )
                 .put( "jdbcUrl", "jdbc:mysql://localhost:3306/dlb?useSSL=true" )
@@ -122,7 +109,7 @@ public class AuthWebVerticle extends AbstractVerticle{
         Vertx vertx = Vertx.vertx( vertxOptions );
 
         DeploymentOptions options = new DeploymentOptions();
-//        options.setInstances( 1 );
+        options.setInstances( 10 );
 
         options.setConfig( new JsonObject().put( "/private/product/add", "admin" ) );
         vertx.deployVerticle( AuthWebVerticle.class.getName(), options, res -> {

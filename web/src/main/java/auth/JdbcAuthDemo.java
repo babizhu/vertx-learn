@@ -27,8 +27,8 @@ public class JdbcAuthDemo extends AbstractVerticle{
                 .put( "maximumPoolSize", 30 );
         JDBCClient jdbcClient = JDBCClient.createShared( vertx, jdbcClientConfig );
 
-//        JDBCAuth authProvider = JDBCAuth.create( vertx, jdbcClient );
-        CustomJdbcAuth authProvider = new CustomJdbcAuth( vertx, jdbcClient );
+        JDBCAuth authProvider = JDBCAuth.create( vertx, jdbcClient );
+//        CustomJdbcAuth authProvider = new CustomJdbcAuth( vertx, jdbcClient );
 //        authProvider.setRolesQuery("SELECT PERM FROM roles_perms RP, user_roles UR WHERE UR.USERNAME = ? AND UR.ROLE = RP.ROLE"  );//解决表大小写的问题，真麻烦
 //insertUser( authProvider,jdbcClient );
 //Thread.sleep( 1000 );
