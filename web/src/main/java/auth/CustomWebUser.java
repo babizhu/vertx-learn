@@ -23,10 +23,11 @@ public class CustomWebUser implements User, ClusterSerializable{
     private final JsonObject principal;
 
     private String rolePrefix;
+    @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private CustomJdbcAuth authProvider;
     private String userName;
 
-    CustomWebUser( String userName, Set<String> roles, Set<String> permissions, CustomJdbcAuth customJdbcAuth ){
+    CustomWebUser( String userName, Set<String> roles, Set<String> permissions, @SuppressWarnings("unused") CustomJdbcAuth customJdbcAuth ){
         this.roles = roles;
         this.permissions = permissions;
         principal = new JsonObject().put( "username", userName );
@@ -130,5 +131,15 @@ public class CustomWebUser implements User, ClusterSerializable{
     }
     public Set<String> getPermissions(){
         return permissions;
+    }
+
+    @Override
+    public String toString(){
+        return "CustomWebUser{" +
+                "roles=" + roles +
+                ", permissions=" + permissions +
+                ", principal=" + principal +
+                ", userName='" + userName + '\'' +
+                '}';
     }
 }

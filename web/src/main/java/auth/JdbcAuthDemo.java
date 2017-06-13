@@ -28,10 +28,7 @@ public class JdbcAuthDemo extends AbstractVerticle{
         JDBCClient jdbcClient = JDBCClient.createShared( vertx, jdbcClientConfig );
 
         JDBCAuth authProvider = JDBCAuth.create( vertx, jdbcClient );
-//        CustomJdbcAuth authProvider = new CustomJdbcAuth( vertx, jdbcClient );
-//        authProvider.setRolesQuery("SELECT PERM FROM roles_perms RP, user_roles UR WHERE UR.USERNAME = ? AND UR.ROLE = RP.ROLE"  );//解决表大小写的问题，真麻烦
-//insertUser( authProvider,jdbcClient );
-//Thread.sleep( 1000 );
+        insertUser(authProvider, jdbcClient );
         JsonObject authInfo = new JsonObject().put("username", "tim").put("password", "sausages");
 
         authProvider.authenticate(authInfo, res -> {
@@ -73,13 +70,13 @@ public class JdbcAuthDemo extends AbstractVerticle{
 
     private void insertUser(JDBCAuth authProvider,JDBCClient jdbcClient){
         String salt = authProvider.generateSalt();
-        String hash = authProvider.computeHash("sausages", salt);
+        String hash = authProvider.computeHash("lk", salt);
 // save to the database
         jdbcClient.getConnection( res -> {
             if( res.succeeded() ) {
 
                 SQLConnection con = res.result();
-                con.updateWithParams("INSERT INTO USER VALUES (?, ?, ?)", new JsonArray().add("tim").add(hash).add(salt), res1 -> {
+                con.updateWithParams("INSERT INTO USER VALUES (?, ?, ?)", new JsonArray().add("lk").add(hash).add(salt), res1 -> {
                     if (res1.succeeded()) {
                         System.out.println( "add user success!!!" );
                     }else{

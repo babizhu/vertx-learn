@@ -38,5 +38,6 @@
     <orderEntry type="library" name="Maven: io.vertx:vertx-auth-common:3.4.1" level="project" />
     <orderEntry type="library" name="Maven: io.vertx:vertx-auth-jdbc:3.4.1" level="project" />
     <orderEntry type="library" name="Maven: mysql:mysql-connector-java:6.0.5" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: io.vertx:vertx-unit:3.4.1" level="project" />
   </component>
 </module>

@@ -58,7 +58,12 @@
             <optional>true</optional>
         </dependency>
 
-        
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-unit</artifactId>
+            <version>3.4.1</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>

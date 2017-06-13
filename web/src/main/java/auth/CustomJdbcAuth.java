@@ -13,9 +13,10 @@ import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * Created by liulaoye on 17-6-6.
@@ -28,22 +29,37 @@ public class CustomJdbcAuth implements AuthProvider{
     /**
      * The default query to retrieve all roles for the user
      */
+    @SuppressWarnings("unused")
     private static final String DEFAULT_ROLES_QUERY = "SELECT ROLE FROM USER_ROLES WHERE USERNAME = ?";
 
     /**
      * The default query to retrieve all permissions for the role
      */
+    @SuppressWarnings("unused")
     private static final String DEFAULT_PERMISSIONS_QUERY = "SELECT PERM FROM ROLES_PERMS WHERE ROLE IN(?)";
 
     /**
+     * The default query to retrieve all permissions and roles for the user
+     */
+    private static final String DEFAULT_PERMISSIONS_AND_ROLES_QUERY =
+            "SELECT UR.ROLE,PERM FROM ROLES_PERMS RP, USER_ROLES UR WHERE UR.USERNAME = ? AND UR.ROLE = RP.ROLE";
+
+    private static final String DEFAULT_ROLES = "guest";//缺省角色，用户如果在数据库如果查不到任何角色，缺省拥有此角色
+
+    /**
+     * guest角色的缺省权限
+     */
+    private static final String DEFAULT_PERMISSIONS = "sys:dashboard:view";
+    /**
      * The default role prefix
      */
-    public static final String DEFAULT_ROLE_PREFIX = "role:";
+    @SuppressWarnings("unused")
+    static final String DEFAULT_ROLE_PREFIX = "role:";
 
     private final JDBCClient client;
     private final DefaultHashStrategy hashStrategy;
 
-    public CustomJdbcAuth( Vertx vertx ,JDBCClient client ){
+    public CustomJdbcAuth( Vertx vertx, JDBCClient client ){
         this.client = client;
         this.hashStrategy = new DefaultHashStrategy( vertx );
     }
@@ -71,26 +87,35 @@ public class CustomJdbcAuth implements AuthProvider{
                     break;
                 }
                 case 1: {
-                    System.out.println(Thread.currentThread().getName());
                     JsonArray row = rs.getResults().get( 0 );
                     String hashedStoredPwd = hashStrategy.getHashedStoredPwd( row );
                     String salt = hashStrategy.getSalt( row );
                     String hashedPassword = hashStrategy.computeHash( password, salt );
                     if( hashedStoredPwd.equals( hashedPassword ) ) {
 
-                        executeQuery( DEFAULT_ROLES_QUERY, new JsonArray().add( userName ), resultHandler, rs1 -> {
-                            System.out.println(Thread.currentThread().getName());
+                        executeQuery( DEFAULT_PERMISSIONS_AND_ROLES_QUERY, new JsonArray().add( userName ), resultHandler, rs1 -> {
+                            final Set<String> roles = new HashSet<>();
+                            final Set<String> permissions = new HashSet<>();
+                            if( rs1.getRows().size() == 0 ) {
+                                roles.addAll( Arrays.asList( DEFAULT_ROLES.split( "," ) ) );
+                                permissions.addAll( Arrays.asList( DEFAULT_PERMISSIONS.split( "," ) ) );
+                            } else {
+                                for( JsonObject entries : rs1.getRows() ) {
+                                    roles.add( entries.getString( "ROLE" ) );
+                                    permissions.addAll( Arrays.asList( entries.getString( "PERM" ).split( "," ) ) );
+                                }
+                                resultHandler.handle( Future.succeededFuture( new CustomWebUser( userName, roles, permissions, this ) ) );
 
-                            final Set<String> roles = rs1.getRows().stream().map( entries -> entries.getString( "ROLE" ) ).collect( Collectors.toSet() );
-                            final String  permissionCondition = roles.stream().map(item->"'"+item+"'").collect( Collectors.joining(",") );
-                            final String permissionSql = DEFAULT_PERMISSIONS_QUERY.replace( "?", permissionCondition );
+                            }
 
-                            executeQuery( permissionSql, null, resultHandler, rs2 -> {//
-                                System.out.println(Thread.currentThread().getName());
-
-                                final Set<String> permissions = rs2.getRows().stream().map( entries -> entries.getString( "PERM" ) ).collect( Collectors.toSet() );
-                                resultHandler.handle( Future.succeededFuture( new CustomWebUser( userName,roles,permissions,this ) ) );
-                            } );
+//                            final String permissionCondition = roles.stream().map( item -> "'" + item + "'" ).collect( Collectors.joining( "," ) );
+//                            final String permissionSql = DEFAULT_PERMISSIONS_QUERY.replace( "?", permissionCondition );
+//
+//                            executeQuery( permissionSql, null, resultHandler, rs2 -> {//
+//
+//                                final Set<String> permissions = rs2.getRows().stream().map( entries -> entries.getString( "PERM" ) ).collect( Collectors.toSet() );
+//                                resultHandler.handle( Future.succeededFuture( new CustomWebUser( userName, roles, permissions, this ) ) );
+//                            } );
 
                         } );
 
@@ -129,4 +154,6 @@ public class CustomJdbcAuth implements AuthProvider{
             }
         } );
     }
+
+
 }

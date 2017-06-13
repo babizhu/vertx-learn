@@ -1,7 +1,6 @@
 package web.handler.impl;
 
 import anno.RequirePermissions;
-import anno.RequireRoles;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
@@ -18,20 +17,19 @@ public class ProductHandler{
 
     public Router addRouter( Router restAPI ){
         restAPI.route( "/add" ).handler( this::add );
-        restAPI.route( "/del/:productId" ).handler( this::del );
+        restAPI.route( "/del" ).handler( this::del );
         return restAPI;
     }
 
-    @RequirePermissions("system:product:add")
-    @RequireRoles("admin,sys")
+    @RequirePermissions("sys:product:add")
+//    @RequireRoles("admin,sys")
     private void add( RoutingContext ctx ){
-        final String path = ctx.get( "path" );
         //TODO
-        ctx.response().end( "path:" + path + "\nadd product" );
+        ctx.response().end( "add product" );
     }
 
-    @RequirePermissions("system:product:del")
-    @RequireRoles("admin,sys")
+    @RequirePermissions("sys:product:del")
+//    @RequireRoles("admin,sys")
     private void del( RoutingContext ctx ){
         String productID = ctx.request().getParam( "productid" );
 
