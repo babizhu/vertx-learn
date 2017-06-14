@@ -4,6 +4,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.jdbc.JDBCClient;
+import web.pojo.Product;
 
 /**
  * Created by liulaoye on 17-6-14.
@@ -18,7 +19,7 @@ public class ProductService extends BaseServiceWithJdbc{
      * 增加一个商品
      * @param a
      */
-    public ProductService add( String a,Handler<AsyncResult<Void>> resultHandler ){
+    public ProductService add(Product a, Handler<AsyncResult<Void>> resultHandler ){
         JsonArray params = new JsonArray().add("a");
         executeNoResult( params,"insert ", resultHandler);
         return this;
