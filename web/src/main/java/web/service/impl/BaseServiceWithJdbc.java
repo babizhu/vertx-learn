@@ -27,13 +27,13 @@ public abstract class BaseServiceWithJdbc implements BaseService{
      * @param resultHandler async result handler
      */
     protected void executeNoResult( JsonArray params, String sql, Handler<AsyncResult<Void>> resultHandler ){
-        jdbcClient.getConnection( connHandler( resultHandler, connection -> connection.updateWithParams( sql, params, r -> {
+        jdbcClient.getConnection( connHandler( resultHandler, con -> con.updateWithParams( sql, params, r -> {
             if( r.succeeded() ) {
                 resultHandler.handle( Future.succeededFuture() );
             } else {
                 resultHandler.handle( Future.failedFuture( r.cause() ) );
             }
-            connection.close();
+            con.close();
         } ) ) );
     }
 
