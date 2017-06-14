@@ -35,8 +35,7 @@ public class ProductHandler extends BaseHandler{
     @RequirePermissions("sys:product:add")
     @RequireRoles("sys")
     private void add( RoutingContext ctx ){
-        service.add("a");
-        ctx.response().end( "add product" );
+        service.add("a",(a)-> ctx.response().end( "add product" ) );
     }
 
     @RequirePermissions("sys:product:del")

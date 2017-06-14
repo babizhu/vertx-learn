@@ -1,5 +1,8 @@
 package web.service.impl;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
 import io.vertx.ext.jdbc.JDBCClient;
 
 /**
@@ -15,7 +18,10 @@ public class ProductService extends BaseServiceWithJdbc{
      * 增加一个商品
      * @param a
      */
-    public void add( String a ){
+    public ProductService add( String a,Handler<AsyncResult<Void>> resultHandler ){
+        JsonArray params = new JsonArray().add("a");
+        executeNoResult( params,"insert ", resultHandler);
+        return this;
 
     }
 }
