@@ -135,7 +135,6 @@ public class WebAuthHandlerImpl implements WebAuthHandler{
     public void handle( RoutingContext ctx ){
         final CustomWebUser user = (CustomWebUser) ctx.user();
 
-
         if( user == null ) {
             ctx.fail( 403 );
 
@@ -143,8 +142,8 @@ public class WebAuthHandlerImpl implements WebAuthHandler{
         } else {
             String path = ctx.request().path().substring( AuthWebVerticle.API_PREFIX.length() );
             PermisstionAndRoleSet permissionOrRole = authMap.get( path );
-            if(permissionOrRole == null ){
-                ctx.fail( 405 );
+            if( permissionOrRole == null ) {
+                ctx.fail( 403 );
                 return;
             }
 
@@ -161,6 +160,5 @@ public class WebAuthHandlerImpl implements WebAuthHandler{
         return roles.contains( "admin" ) || permissionOrRole.isExist( roles ) || permissionOrRole.isExist( permissions );
 
     }
-
 
 }

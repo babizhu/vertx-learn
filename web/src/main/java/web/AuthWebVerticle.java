@@ -10,6 +10,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
 import io.vertx.ext.web.handler.CookieHandler;
 import io.vertx.ext.web.handler.SessionHandler;
@@ -20,46 +21,43 @@ import org.slf4j.LoggerFactory;
 import web.handler.WebAuthHandler;
 import web.handler.impl.ProductHandler;
 
-
 /**
  * Created by liulaoye on 17-6-8.
  * 带自定义的Auth的web演示
  */
-
 public class AuthWebVerticle extends AbstractVerticle{
-    private static final Logger logger = LoggerFactory.getLogger( AuthWebVerticle.class.getName() );
-    private static final int PORT = 8000;
-    public static final String API_PREFIX = "/api/";
-
-    private CustomJdbcAuth authProvider;
-
+    private static final Logger         logger = LoggerFactory.getLogger( AuthWebVerticle.class.getName() );
+    private static final int            PORT = 8000;
+    public static final String          API_PREFIX = "/api/";
+    private JDBCClient                  jdbcClient;
+    private CustomJdbcAuth              authProvider;
 
     @Override
-    public void start() throws Exception{
+    public void start(){
 
-
-//        super.start();
-        init();
+        initJdbcAuth();
 
         HttpServer server = vertx.createHttpServer();
         Router router = Router.router( vertx );
 
         router.route().handler( CookieHandler.create() );
         router.route().handler( SessionHandler.create( LocalSessionStore.create( vertx ) ) );
-
         router.route().handler( UserSessionHandler.create( authProvider ) );
-        router.route( "/login" ).handler( ctx -> {
-            if( ctx.user() != null ){
-                ctx.response().end(  "不要重复登录！！！" );
+
+        router.route( "/login" ).handler( ( RoutingContext ctx ) -> {
+            if( ctx.user() != null ) {
+                ctx.response().end( "不要重复登录！！！" );
                 return;
             }
             String userName = ctx.request().getParam( "userName" );
             String password = ctx.request().getParam( "password" );
-            if( userName == null || userName.isEmpty()){
+            if( userName == null || userName.isEmpty() ) {
                 userName = "tim";
-            }if( password == null || password.isEmpty()){
+            }
+            if( password == null || password.isEmpty() ) {
                 password = "sausages";
             }
+
 
             JsonObject authInfo = new JsonObject().put( "username", userName ).put( "password", password );
             authProvider.authenticate( authInfo, res -> {
@@ -75,45 +73,28 @@ public class AuthWebVerticle extends AbstractVerticle{
                     } else {
                         ctx.fail( 403 );
                     }
-                }else{
-                    ctx.response().end(res.cause().toString());
+                } else {
+                    ctx.response().end( res.cause().toString() );
                 }
             } );
         } );
 
 
-        router.route( API_PREFIX +"*" ).handler( WebAuthHandler.create( authProvider ) );
-
-//        AuthHandler basicAuthHandler = BasicAuthHandler.create( authProvider );
-////        basicAuthHandler.addAuthority( "abcd" );
-//
-//        router.route( "/api/*" ).handler( basicAuthHandler );
-//        router.route( "/api/*" ).handler( ctx -> {
-//            final CustomWebUser user = (CustomWebUser) ctx.user();
-//
-//
-//            ctx.response().end( user.getRoles().toString() );
-//        } );
-        dispatcher( router );
-//        final Handler<RoutingContext> product = this::product;
-
-
-//        final Handler<RoutingContext> test = this::test;
-
-//        router.route( "/public" ).handler( this::product );
-//        System.out.println( test );
-//        System.out.println( "test instanceof Handler is " + (test instanceof Handler) );
-
+        router.route( API_PREFIX + "*" ).handler( WebAuthHandler.create( authProvider ) ).failureHandler( this::failur );
+        dispatcher( router, jdbcClient );
         server.requestHandler( router::accept ).listen( PORT );
-        logger.info( "init end" );
 
     }
 
+    private void failur( RoutingContext ctx ){
+//        ctx.
+        System.out.println(ctx.failure().getCause());
+    }
 
-    private void dispatcher( Router mainRouter ){
+
+    private void dispatcher( Router mainRouter, JDBCClient jdbcClient ){
         Router restAPI = Router.router( vertx );
-
-        mainRouter.mountSubRouter( API_PREFIX + "product", new ProductHandler().addRouter( restAPI ) );
+        mainRouter.mountSubRouter( API_PREFIX + "product", new ProductHandler(jdbcClient).addRouter( restAPI ) );
 
 
     }
@@ -121,8 +102,7 @@ public class AuthWebVerticle extends AbstractVerticle{
     /**
      * 初始化jdbcClient以及authProvider
      */
-
-    private void init(){
+    private void initJdbcAuth(){
 
         JsonObject jdbcClientConfig = new JsonObject()
                 .put( "provider_class", "io.vertx.ext.jdbc.spi.impl.HikariCPDataSourceProvider" )
@@ -131,13 +111,9 @@ public class AuthWebVerticle extends AbstractVerticle{
                 .put( "password", "root" )
 //                .put("driverClassName", "org.postgresql.Driver")
                 .put( "maximumPoolSize", 30 );
-        JDBCClient jdbcClient = JDBCClient.createShared( vertx, jdbcClientConfig );
+        jdbcClient = JDBCClient.createShared( vertx, jdbcClientConfig );
         authProvider = new CustomJdbcAuth( vertx, jdbcClient );
-
-
-//        this.config()
     }
-
 
     public static void main( String[] args ){
         final VertxOptions vertxOptions = new VertxOptions();
@@ -149,11 +125,10 @@ public class AuthWebVerticle extends AbstractVerticle{
 
         vertx.deployVerticle( AuthWebVerticle.class.getName(), options, res -> {
             if( res.succeeded() ) {
-                System.out.println( "web server started at port " + PORT + ", please click http://localhost:" + PORT + " to visit!" );
+                logger.info( "web server started at port " + PORT + ", please click http://localhost:" + PORT + " to visit!" );
             } else {
                 res.cause().printStackTrace();
             }
         } );
-
     }
 }

@@ -4,10 +4,7 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpClientResponse;
-import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.http.*;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -24,32 +21,37 @@ import java.util.List;
  * test
  */
 @RunWith(VertxUnitRunner.class)
-
 public class WebAuthHandlerImplTest{
     private static Vertx vertx;
-    final HttpClient httpClient = vertx.createHttpClient();
+    private static HttpClient httpClient;
+    private static final int PORT = 8000;
+
     @BeforeClass
     public static void setUp( TestContext context ){
 
         vertx = Vertx.vertx();
-
+        HttpClientOptions options = new HttpClientOptions();
+        options.setConnectTimeout( 7000 );
+        options.setDefaultPort( PORT );
+        options.setDefaultHost( "localhost" );
+        httpClient = vertx.createHttpClient( options );
 
         final VertxOptions vertxOptions = new VertxOptions();
         vertxOptions.setBlockedThreadCheckInterval( 1000000 );
         Vertx vertx = Vertx.vertx( vertxOptions );
 
-        DeploymentOptions options = new DeploymentOptions();
-        options.setInstances( 1 );
+        DeploymentOptions deploymentOptions = new DeploymentOptions();
+        deploymentOptions.setInstances( 1 );
 
-        vertx.deployVerticle( AuthWebVerticle.class.getName(), options, context.asyncAssertSuccess() );
+        vertx.deployVerticle( AuthWebVerticle.class.getName(), deploymentOptions, context.asyncAssertSuccess() );
     }
 
     private static class SessionCookie{
-        public List<String> get(){
+        List<String> get(){
             return cookies;
         }
 
-        public void set( List<String> cookies ){
+        void set( List<String> cookies ){
             this.cookies = cookies;
         }
 
@@ -62,43 +64,41 @@ public class WebAuthHandlerImplTest{
     }
 
     @Test
+    public void testLogin( TestContext context ) throws Exception{
+        httpClient.getNow( "/login?username=lk&&password=lk", res -> {//登录
+            context.assertEquals( 200, res.statusCode() );
+        });
+    }
+    @Test
     public void handle( TestContext context ) throws Exception{
         final Async async = context.async();
 
 
-        int PORT = 8000;
         final SessionCookie sessionCookie = new SessionCookie();
-        httpClient.getNow( PORT, "localhost", "/api/product/add", res ->
+        httpClient.getNow( "/api/product/add", res ->//尚未登录
                 context.assertEquals( 403, res.statusCode() ) );
 
-        httpClient.getNow( PORT, "localhost", "/login?username=lk&&password=lk", res -> {
+        httpClient.getNow( "/login?username=lk&&password=lk", res -> {//登录
             context.assertEquals( 200, res.statusCode() );
             sessionCookie.set( res.cookies() );
             res.bodyHandler( body -> context.assertEquals( true, body.toString().contains( "sys" ) ) );
-            sendRequestWithCookie(sessionCookie.get(),PORT,"localhost","/api/product/del",res1 -> {
-                context.assertEquals( 200, res1.statusCode() );
-                async.complete();
 
+            sendRequestWithCookie( sessionCookie.get(), "/api/product/del", res1 -> context.assertEquals( 200, res1.statusCode() ) );//正常访问
+
+            sendRequestWithCookie( sessionCookie.get(), "/api/product/add", res1 -> {//即使登录也无权限
+                context.assertEquals( 403, res1.statusCode() );
+                async.complete();
             } );
 
         } );
 
 
-//        final HttpClientRequest req = httpClient.get( PORT, "localhost", "/api/product/add", res -> {
-//            context.assertEquals( 403, res.statusCode() );
-//
-//        } );
-//        if( sessionCookie.get() != null ) {
-//            req.putHeader( "cookie", sessionCookie.get() );
-//        }
-
-
-
     }
-    private void sendRequestWithCookie( List<String> cookies,int port,String host,String uri,Handler<HttpClientResponse> responseHandler){
-        final HttpClientRequest req = httpClient.get( port, host, uri, responseHandler);
+
+    private void sendRequestWithCookie( List<String> cookies,  String uri, Handler<HttpClientResponse> responseHandler ){
+        final HttpClientRequest req = httpClient.get( uri, responseHandler );
         if( cookies != null ) {
-            req.putHeader( HttpHeaders.SET_COOKIE.toString(), cookies );
+            req.putHeader( HttpHeaders.COOKIE.toString(), cookies );
         }
         req.end();
     }
