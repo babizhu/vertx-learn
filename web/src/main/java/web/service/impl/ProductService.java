@@ -17,12 +17,17 @@ public class ProductService extends BaseServiceWithJdbc{
 
     /**
      * 增加一个商品
+     *
      * @param a
      */
-    public ProductService add(Product a, Handler<AsyncResult<Void>> resultHandler ){
-        JsonArray params = new JsonArray().add("a");
-        executeNoResult( params,"insert ", resultHandler);
+    public ProductService add( Product product, Handler<AsyncResult<Void>> resultHandler ){
+        JsonArray params = new JsonArray().add( product.getId() )
+                .add( product.getName() );
+        this.executeNoResult( params, INSERT_STATEMENT, resultHandler );
         return this;
 
     }
+
+    private static final String INSERT_STATEMENT = "INSERT INTO product (id, name) VALUES (?, ?)";
+
 }
