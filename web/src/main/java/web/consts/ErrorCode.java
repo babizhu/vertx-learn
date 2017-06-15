@@ -1,4 +1,4 @@
-package consts;
+package web.consts;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,31 +14,32 @@ public enum ErrorCode{
 
     ////////////////////////////////////////////////系统错误/////////////////////////////////////////
 
+    SYS_UNKNOW_ERROR(1),
+
     /**
      * 无效的http请求
      */
-    INVALID_REQUEST( 100 ),
+    SYS_INVALID_REQUEST( 100 ),
 
     /**
      * 处理句柄不存在
      */
-    HANDLER_NOT_FOUND( 101 ),
+    SYS_HANDLER_NOT_FOUND( 101 ),
 
     /**
      * 客户端发送的签名字段验证错误
      */
-    SIGNATURE_ERROR( 102 ),
+    SYS_SIGNATURE_ERROR( 102 ),
 
     /**
      * 客户端发送请求参数错误
      */
-    PARAMETER_ERROR( 103 ),
+    SYS_PARAMETER_ERROR( 103 ),
 
     /**
      * 方法未实现
      */
-    NOT_IMPLENMENT( 104 ),
-
+    SYS_NOT_IMPLENMENT( 104 ),
 
     ////////////////////////////////////////////////用户错误/////////////////////////////////////////
     /**
@@ -60,7 +61,8 @@ public enum ErrorCode{
     /**
      * 用户名或密码错误
      */
-    USER_UNAME_PASS_INVALID( 1004 );
+    USER_UNAME_PASS_INVALID( 1004 ),
+    USER_PERMISSION_DENY( 1005 );
 
     ////////////////////////////////////////////////枚举结束/////////////////////////////////////////
 

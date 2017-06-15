@@ -18,6 +18,7 @@ import io.vertx.ext.web.handler.UserSessionHandler;
 import io.vertx.ext.web.sstore.LocalSessionStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import web.consts.ErrorCode;
 import web.handler.WebAuthHandler;
 import web.handler.impl.ProductHandler;
 
@@ -26,11 +27,11 @@ import web.handler.impl.ProductHandler;
  * 带自定义的Auth的web演示
  */
 public class AuthWebVerticle extends AbstractVerticle{
-    private static final Logger         logger = LoggerFactory.getLogger( AuthWebVerticle.class.getName() );
-    private static final int            PORT = 8000;
-    public static final String          API_PREFIX = "/api/";
-    private JDBCClient                  jdbcClient;
-    private CustomJdbcAuth              authProvider;
+    private static final Logger logger = LoggerFactory.getLogger( AuthWebVerticle.class.getName() );
+    private static final int PORT = 8000;
+    public static final String API_PREFIX = "/api/";
+    private JDBCClient jdbcClient;
+    private CustomJdbcAuth authProvider;
 
     @Override
     public void start(){
@@ -87,14 +88,18 @@ public class AuthWebVerticle extends AbstractVerticle{
     }
 
     private void failur( RoutingContext ctx ){
-//        ctx.
-        System.out.println(ctx.failure().getCause());
+        ErrorCode error = ctx.get( "e" );
+        if( error == null ) {
+            error = ErrorCode.SYS_UNKNOW_ERROR;
+        }
+        String res = "{\"result\":" + error.toNum() + ",\"msg\":\"" + error.name() + "\"}";
+        ctx.response().setStatusCode( 500 ).end( res );
     }
 
 
     private void dispatcher( Router mainRouter, JDBCClient jdbcClient ){
         Router restAPI = Router.router( vertx );
-        mainRouter.mountSubRouter( API_PREFIX + "product", new ProductHandler(jdbcClient).addRouter( restAPI ) );
+        mainRouter.mountSubRouter( API_PREFIX + "product", new ProductHandler( jdbcClient ).addRouter( restAPI ) );
 
 
     }

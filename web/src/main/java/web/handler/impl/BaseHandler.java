@@ -1,6 +1,6 @@
 package web.handler.impl;
 
-import consts.ErrorCode;
+import web.consts.ErrorCode;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
