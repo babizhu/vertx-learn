@@ -5,6 +5,7 @@ import io.vertx.core.json.Json;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import web.consts.ErrorCode;
 import web.pojo.Product;
 import web.service.impl.ProductService;
 
@@ -38,7 +39,6 @@ public class ProductHandler extends BaseHandler{
     private void add( RoutingContext ctx ){
         Product product = new Product( 22, "name" );
 
-
         service.add( product, ( a ) -> ctx.response().end( Json.encode( product ) ) );
     }
 
@@ -46,8 +46,10 @@ public class ProductHandler extends BaseHandler{
 //    @RequireRoles("admin,sys")
     private void del( RoutingContext ctx ){
         String productID = ctx.request().getParam( "productid" );
-
-        final String path = ctx.get( "path" );
-        ctx.response().end( "path:" + path + "\ndel product " + productID );
+        if( productID == null || productID.isEmpty() ) {
+            sendFailResponse( ctx, ErrorCode.SYS_PARAMETER_ERROR );
+            return;
+        }
+        service.del( productID, ( result ) -> sendBackResponse( ctx, result ) );
     }
 }

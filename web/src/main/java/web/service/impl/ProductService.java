@@ -28,6 +28,21 @@ public class ProductService extends BaseServiceWithJdbc{
 
     }
 
-    private static final String INSERT_STATEMENT = "INSERT INTO product (id, name) VALUES (?, ?)";
+    public ProductService del( String  id, Handler<AsyncResult<Void>> resultHandler ){
+        JsonArray params = new JsonArray().add( id );
+        this.executeNoResult( params, DELETE_STATEMENT, resultHandler );
+        return this;
+
+    }
+
+    public ProductService getProductsByPage( int page, Handler<AsyncResult<Void>> resultHandler ){
+        JsonArray params = new JsonArray().add( id );
+        this.executeNoResult( params, DELETE_STATEMENT, resultHandler );
+        return this;
+
+    }
+
+    private static final String INSERT_STATEMENT = "insert int product (id, name) values (?, ?)";
+    private static final String DELETE_STATEMENT = "delete product where id = ?";
 
 }

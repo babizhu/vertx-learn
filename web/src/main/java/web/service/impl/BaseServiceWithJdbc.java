@@ -4,9 +4,12 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.SQLConnection;
 import web.service.BaseService;
+
+import java.util.List;
 
 /**
  * Created by liulaoye on 17-6-14.
@@ -14,9 +17,26 @@ import web.service.BaseService;
  */
 public abstract class BaseServiceWithJdbc implements BaseService{
     private final JDBCClient jdbcClient;
+    protected int page_limit = 10;
 
     BaseServiceWithJdbc( JDBCClient jdbcClient ){
         this.jdbcClient = jdbcClient;
+    }
+
+    protected Future<List<JsonObject>> getByPage(int page, int limit, String sql) {
+        JsonArray params = new JsonArray().add(calcPage(page, limit)).add(limit);
+        return getConnection().compose(connection -> {
+            Future<List<JsonObject>> future = Future.future();
+            connection.queryWithParams(sql, params, r -> {
+                if (r.succeeded()) {
+                    future.complete(r.result().getRows());
+                } else {
+                    future.fail(r.cause());
+                }
+                connection.close();
+            });
+            return future;
+        });
     }
 
     /**
